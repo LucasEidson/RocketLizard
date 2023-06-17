@@ -1,2 +1,7 @@
 DISPLAY_WIDTH = 1280
 DISPLAY_HEIGHT = 720
+#jump cooldown in ms
+JCOOLDOWN = 2000
+PLAYERSPEED = 300
+#Initial Jump Speed
+JSPEED = 500
