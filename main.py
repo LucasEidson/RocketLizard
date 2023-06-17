@@ -1,13 +1,14 @@
 import pygame
 import settings
 from player import Player
+from tiles import Tile
+from stage1 import Stage1
 
 class Main:
     def __init__(self):
         pygame.init()
-        self.display_surface = pygame.display.set_mode([settings.DISPLAY_WIDTH, settings.DISPLAY_HEIGHT])
         self.clock = pygame.time.Clock()
-        
+        self.stage1 = Stage1()
         self.player = Player()
 
     def run(self):
@@ -19,7 +20,8 @@ class Main:
             self.player.run()
             self.player.event_loop()
             jump = self.player.move(dt, jump)
-            pygame.display.update()
+            #runs display
+            self.stage1.run()
 
 if __name__ == '__main__':
     main = Main()

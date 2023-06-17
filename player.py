@@ -8,7 +8,7 @@ class Player:
         self.display_surface = pygame.display.get_surface()
 
         #for movement and nav
-        self.origin = pygame.math.Vector2(settings.DISPLAY_WIDTH/2, settings.DISPLAY_HEIGHT - 40) 
+        self.origin = pygame.math.Vector2(settings.DISPLAY_WIDTH/2, settings.DISPLAY_HEIGHT - settings.TILE_HEIGHT) 
 
     #checks for input
     def event_loop(self):

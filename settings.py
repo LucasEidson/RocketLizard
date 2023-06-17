@@ -5,3 +5,6 @@ JCOOLDOWN = 2000
 PLAYERSPEED = 300
 #Initial Jump Speed
 JSPEED = 500
+#Platform info
+TILE_HEIGHT = 90
+TILE_WIDTH = 90
