@@ -1,27 +1,21 @@
 import pygame
-import settings
-from player import Player
-from tiles import Tile
-from stage1 import Stage1
+from settings import *
+from game import Game
+
 
 class Main:
     def __init__(self):
         pygame.init()
+        pygame.display.set_mode([DISPLAY_WIDTH, DISPLAY_HEIGHT])
         self.clock = pygame.time.Clock()
-        self.stage1 = Stage1()
-        self.player = Player()
+        self.game = Game()
 
     def run(self):
-        running = True
-        jump = False
-
-        while running: 
-            dt = self.clock.tick(60) / 1000 
-            self.player.run()
-            self.player.event_loop()
-            jump = self.player.move(dt, jump)
-            #runs display
-            self.stage1.run()
+        while True: 
+            dt = self.clock.tick(60) / 1000
+            #from game.py
+            self.game.run(dt)
+            self.game.event_loop() 
 
 if __name__ == '__main__':
     main = Main()
