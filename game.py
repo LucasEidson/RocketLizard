@@ -6,7 +6,7 @@ class Game:
     def __init__(self):
         self.display_surface = pygame.display.get_surface()
         
-        self.spawn_player()
+        self.spawn_sprites()
 
         #navigation
         self.origin = pygame.math.Vector2()
@@ -18,7 +18,7 @@ class Game:
                     pygame.quit()
                     quit()
         
-    def spawn_player(self):
+    def spawn_sprites(self):
         #player
         self.player_group = pygame.sprite.GroupSingle()
         self.player = Player([0, 0])
@@ -44,15 +44,17 @@ class Game:
                 if map[j][i]:
                     tile = Tile([i * TILE_WIDTH, j * TILE_HEIGHT])
                     self.tiles.add(tile)
+        #Create Rocket_Group (only one rocket at a time)
+        self.rocket_group = pygame.sprite.GroupSingle()
 
     def run(self, dt):
         #logic
         self.player.movement(dt, self.tiles)
-        #if pygame.sprite.spritecollide(self.player, self.tiles, False):
+        self.player.shoot(dt, self.rocket_group, self.tiles)
 
         #draw
         self.display_surface.fill([201, 251, 201])
-        #self.player_group.draw(self.display_surface)
         self.tiles.draw(self.display_surface)
+        self.rocket_group.draw(self.display_surface)
         self.player_group.draw(self.display_surface)
         pygame.display.update()

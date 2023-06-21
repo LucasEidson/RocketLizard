@@ -12,6 +12,10 @@ class Player(pygame.sprite.Sprite):
         #jumping variables
         self.ySpeed = JUMP_HEIGHT
         self.in_air = False
+        #shooting cooldown
+        self.dShoot = 0
+        self.shooting = False
+        self.rocket_direction = 0
     
     
     def movement(self, dt, tiles):
@@ -63,6 +67,23 @@ class Player(pygame.sprite.Sprite):
                     self.direction.y = 0
             self.in_air = not on_floor
 
+    def shoot(self, dt, rocket_group, tiles):
+        time = pygame.time.get_ticks()
+        if pygame.mouse.get_pressed()[0] and time - self.dShoot > 2000:
+            self.rocket_direction = -self.direction.x
+            if self.rocket_direction == 0:
+                self.rocket_direction = 1
+            self.rocket = Rocket([self.rect.x, self.rect.y])
+            self.rocket.add(rocket_group)
+            self.dShoot = time
+            self.shooting = True
+        if self.shooting:
+            if time - self.dShoot < 5000:
+                self.rocket.move(self.rocket_direction, dt)
+                self.shooting = self.rocket.collide(tiles)
+            else:
+                self.shooting = False
+                self.rocket.kill()
 
 class Tile(pygame.sprite.Sprite):
     def __init__(self, pos):
@@ -71,3 +92,21 @@ class Tile(pygame.sprite.Sprite):
         self.image = pygame.Surface([TILE_WIDTH, TILE_HEIGHT])
         self.rect = self.image.get_rect(topleft=pos)
         self.image.fill([55, 25, 7])
+
+class Rocket(pygame.sprite.Sprite):
+    def __init__(self, pos):
+        super().__init__()
+        self.image = pygame.Surface([36, 12])
+        self.rect = self.image.get_rect(topleft=pos)
+        self.image.fill('red')
+    
+    def move(self, direction, dt):
+        self.rect.x += 500 * direction * dt
+
+    def collide(self, tiles):
+        alive = True
+        for sprite in tiles:
+            if sprite.rect.colliderect(self.rect):
+                self.kill()
+                alive = False
+        return alive
