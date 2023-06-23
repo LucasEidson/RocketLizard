@@ -5,9 +5,8 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, pos):
         super().__init__()
         #Player image and rect
-        self.image = pygame.Surface([PLAYER_WIDTH, PLAYER_HEIGHT])
+        self.image = pygame.image.load("Graphics/Lizardstill1.png").convert_alpha()
         self.rect = self.image.get_rect(topleft=pos)
-        self.image.fill('green')
         self.direction = pygame.math.Vector2(0, 0)
         #jumping variables
         self.ySpeed = JUMP_HEIGHT
@@ -16,7 +15,8 @@ class Player(pygame.sprite.Sprite):
         self.dShoot = 0
         self.shooting = False
         self.rocket_direction = 0
-    
+        #navigation and scrolling
+        self.origin = pygame.math.Vector2()
     
     def movement(self, dt, tiles):
         #get input
@@ -40,8 +40,15 @@ class Player(pygame.sprite.Sprite):
         #change y pos and check for collision
         self.rect.y += self.direction.y * self.ySpeed * dt
         self.yCollision(tiles)
+        #scroll
+        self.origin = pygame.math.Vector2(self.rect.x, self.rect.y)
+        if self.origin.x > DISPLAY_WIDTH - SCROLL_THRESH or self.origin.x < SCROLL_THRESH:
+            dx = self.direction.x * PLAYERSPEED * dt
+            self.rect.x += dx
+            return(dx)
+        else:
+            return(0)
             
-
     #collision is weird if x and y are done in same function
     def xCollision(self, tiles):
         for sprite in tiles:
@@ -51,7 +58,6 @@ class Player(pygame.sprite.Sprite):
                     self.rect.left = sprite.rect.right
                 elif self.direction.x < 0: #moving left
                     self.rect.right = sprite.rect.left
-
         
     def yCollision(self, tiles):
         on_floor = False
@@ -85,6 +91,7 @@ class Player(pygame.sprite.Sprite):
                 self.shooting = False
                 self.rocket.kill()
 
+
 class Tile(pygame.sprite.Sprite):
     def __init__(self, pos):
         super().__init__()
@@ -92,6 +99,7 @@ class Tile(pygame.sprite.Sprite):
         self.image = pygame.Surface([TILE_WIDTH, TILE_HEIGHT])
         self.rect = self.image.get_rect(topleft=pos)
         self.image.fill([55, 25, 7])
+
 
 class Rocket(pygame.sprite.Sprite):
     def __init__(self, pos):
@@ -110,3 +118,12 @@ class Rocket(pygame.sprite.Sprite):
                 self.kill()
                 alive = False
         return alive
+    
+
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self, pos):
+        super().__init__()
+        #enemy image and rect
+        self.image = pygame.Surface([ENEMY_WIDTH, ENEMY_HEIGHT])
+        self.rect = self.image.get_rect(topleft=pos)
+        self.image.fill("red")

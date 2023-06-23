@@ -6,6 +6,9 @@ class Main:
     def __init__(self):
         pygame.init()
         pygame.display.set_mode([DISPLAY_WIDTH, DISPLAY_HEIGHT])
+        pygame.display.set_caption("Rocket Lizard")
+        icon = pygame.image.load("Graphics/Lizardstill1.png")
+        pygame.display.set_icon(icon)
         self.clock = pygame.time.Clock()
         self.game = Game()
 

@@ -9,3 +9,8 @@ GRAVITY = 0.04
 #Tile info
 TILE_WIDTH = 80
 TILE_HEIGHT = 60
+#Enemy info
+ENEMY_WIDTH = 50
+ENEMY_HEIGHT = 70
+#Scroll info
+SCROLL_THRESH = 600
