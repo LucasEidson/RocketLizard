@@ -22,6 +22,7 @@ class Game:
         self.player = Player([DISPLAY_WIDTH / 2, DISPLAY_HEIGHT - TILE_HEIGHT * 2])
         self.player.add(self.player_group)
         #tiles and enemies
+        self.can_collide = pygame.sprite.Group()
         self.tiles = pygame.sprite.Group()
         self.enemies = pygame.sprite.Group()
         #level map:
@@ -32,9 +33,11 @@ class Game:
                 if map[j][i] == 1:
                     tile = Tile([i * TILE_WIDTH, j * TILE_HEIGHT])
                     self.tiles.add(tile)
+                    self.can_collide.add(tile)
                 elif map[j][i] == 2:
                     enemy = Enemy([i * TILE_WIDTH - (ENEMY_WIDTH - TILE_WIDTH), j * TILE_HEIGHT - (ENEMY_HEIGHT - TILE_HEIGHT)])
                     self.enemies.add(enemy)
+                    self.can_collide.add(enemy)
         #Create Rocket_Group (only one rocket at a time)
         self.rocket_group = pygame.sprite.GroupSingle()
 
@@ -48,7 +51,9 @@ class Game:
         #logic
         screen_scroll = self.player.movement(dt, self.tiles)
         self.scroll(screen_scroll)
-        self.player.shoot(dt, self.rocket_group, self.tiles)
+        self.player.shoot(dt, self.rocket_group, self.can_collide)
+        for sprite in self.enemies.sprites():
+            sprite.strafe(dt, self.can_collide)
 
         #draw
         self.display_surface.fill([201, 251, 201])

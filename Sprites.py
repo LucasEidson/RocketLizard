@@ -20,15 +20,19 @@ class Player(pygame.sprite.Sprite):
     
     def movement(self, dt, tiles):
         #get input
+        #im using 'move' to make sure I can keep the direction
+        #without constantly moving the player
         keys = pygame.key.get_pressed()
         if keys[pygame.K_a]:
             self.direction.x = 1
+            move = 1
         elif keys[pygame.K_d]:
             self.direction.x = -1
+            move = 1
         else:
-            self.direction.x = 0
+            move = 0
         #change x pos and check for collision
-        self.rect.x -= self.direction.x * PLAYERSPEED * dt
+        self.rect.x -= self.direction.x * PLAYERSPEED * dt * move
         self.xCollision(tiles)
 
         #jumping and gravity
@@ -42,6 +46,8 @@ class Player(pygame.sprite.Sprite):
         self.yCollision(tiles)
         #scroll
         self.origin = pygame.math.Vector2(self.rect.x, self.rect.y)
+        #make sure player is facing the right direction
+        self.flip_img()
         if self.origin.x > DISPLAY_WIDTH - SCROLL_THRESH or self.origin.x < SCROLL_THRESH:
             dx = self.direction.x * PLAYERSPEED * dt
             self.rect.x += dx
@@ -73,50 +79,60 @@ class Player(pygame.sprite.Sprite):
                     self.direction.y = 0
             self.in_air = not on_floor
 
-    def shoot(self, dt, rocket_group, tiles):
+    def shoot(self, dt, rocket_group, can_collide):
         time = pygame.time.get_ticks()
         if pygame.mouse.get_pressed()[0] and time - self.dShoot > 2000:
             self.rocket_direction = -self.direction.x
             if self.rocket_direction == 0:
                 self.rocket_direction = 1
-            self.rocket = Rocket([self.rect.x, self.rect.y])
+            self.rocket = Rocket([self.rect.x, self.rect.y], self.rocket_direction)
             self.rocket.add(rocket_group)
             self.dShoot = time
             self.shooting = True
         if self.shooting:
             if time - self.dShoot < 5000:
                 self.rocket.move(self.rocket_direction, dt)
-                self.shooting = self.rocket.collide(tiles)
+                self.shooting = self.rocket.collide(can_collide)
             else:
                 self.shooting = False
                 self.rocket.kill()
 
+    def flip_img(self):
+        if self.direction.x > 0:
+            self.image = pygame.transform.flip(pygame.image.load("Graphics/Lizardstill1.png").convert_alpha(), True, False)
+        else:
+            self.image = pygame.image.load("Graphics/Lizardstill1.png").convert_alpha()
 
 class Tile(pygame.sprite.Sprite):
     def __init__(self, pos):
         super().__init__()
         #Tile image and rect
+        self.name = "tile"
         self.image = pygame.Surface([TILE_WIDTH, TILE_HEIGHT])
         self.rect = self.image.get_rect(topleft=pos)
         self.image.fill([55, 25, 7])
 
 
 class Rocket(pygame.sprite.Sprite):
-    def __init__(self, pos):
+    def __init__(self, pos, direction):
         super().__init__()
-        self.image = pygame.Surface([36, 12])
+        if direction > 0:
+            self.image = pygame.image.load("Graphics/rocket.png").convert_alpha()
+        else:
+            self.image = pygame.transform.flip(pygame.image.load("Graphics/rocket.png").convert_alpha(), True, False)
         self.rect = self.image.get_rect(topleft=pos)
-        self.image.fill('red')
     
     def move(self, direction, dt):
         self.rect.x += 500 * direction * dt
 
-    def collide(self, tiles):
+    def collide(self, can_collide):
         alive = True
-        for sprite in tiles:
+        for sprite in can_collide:
             if sprite.rect.colliderect(self.rect):
                 self.kill()
                 alive = False
+                if sprite.name == 'enemy':
+                    sprite.kill()
         return alive
     
 
@@ -127,3 +143,21 @@ class Enemy(pygame.sprite.Sprite):
         self.image = pygame.Surface([ENEMY_WIDTH, ENEMY_HEIGHT])
         self.rect = self.image.get_rect(topleft=pos)
         self.image.fill("red")
+        self.name = "enemy"
+        self.xDirection = 1
+    
+    def strafe(self, dt, can_collide):
+        self.rect.x -= 200 * self.xDirection * dt
+        self.xCollision(can_collide)
+
+    def xCollision(self, can_collide):
+        for sprite in can_collide:
+            if sprite.rect.colliderect(self.rect) and not sprite.rect == self.rect:
+                if self.xDirection > 0: #moving left
+                    self.rect.left = sprite.rect.right
+                    self.xDirection = -1
+                elif self.xDirection < 0: #moving left
+                    self.rect.right = sprite.rect.left
+                    self.xDirection = 1
+            
+        
