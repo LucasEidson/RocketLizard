@@ -50,6 +50,7 @@ class Game:
     def run(self, dt):
         #logic
         screen_scroll = self.player.movement(dt, self.tiles)
+        self.player.enemy_collision(self.enemies)
         self.scroll(screen_scroll)
         self.player.shoot(dt, self.rocket_group, self.can_collide)
         for sprite in self.enemies.sprites():

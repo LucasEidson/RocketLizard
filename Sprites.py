@@ -79,6 +79,11 @@ class Player(pygame.sprite.Sprite):
                     self.direction.y = 0
             self.in_air = not on_floor
 
+    def enemy_collision(self, enemies):
+        for sprite in enemies:
+            if self.rect.colliderect(sprite.rect):
+                self.kill()
+
     def shoot(self, dt, rocket_group, can_collide):
         time = pygame.time.get_ticks()
         if pygame.mouse.get_pressed()[0] and time - self.dShoot > 2000:
@@ -102,6 +107,7 @@ class Player(pygame.sprite.Sprite):
             self.image = pygame.transform.flip(pygame.image.load("Graphics/Lizardstill1.png").convert_alpha(), True, False)
         else:
             self.image = pygame.image.load("Graphics/Lizardstill1.png").convert_alpha()
+
 
 class Tile(pygame.sprite.Sprite):
     def __init__(self, pos):
@@ -140,9 +146,8 @@ class Enemy(pygame.sprite.Sprite):
     def __init__(self, pos):
         super().__init__()
         #enemy image and rect
-        self.image = pygame.Surface([ENEMY_WIDTH, ENEMY_HEIGHT])
+        self.image = pygame.image.load("Graphics/robot.png")
         self.rect = self.image.get_rect(topleft=pos)
-        self.image.fill("red")
         self.name = "enemy"
         self.xDirection = 1
     
