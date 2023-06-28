@@ -8,6 +8,7 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.image.load("Graphics/Lizardstill1.png").convert_alpha()
         self.rect = self.image.get_rect(topleft=pos)
         self.direction = pygame.math.Vector2(0, 0)
+        self.alive = 1
         #jumping variables
         self.ySpeed = JUMP_HEIGHT
         self.in_air = False
@@ -23,6 +24,9 @@ class Player(pygame.sprite.Sprite):
         #im using 'move' to make sure I can keep the direction
         #without constantly moving the player
         keys = pygame.key.get_pressed()
+        if keys[pygame.K_ESCAPE]:
+            self.kill()
+            self.alive = False
         if keys[pygame.K_a]:
             self.direction.x = 1
             move = 1
@@ -48,6 +52,9 @@ class Player(pygame.sprite.Sprite):
         self.origin = pygame.math.Vector2(self.rect.x, self.rect.y)
         #make sure player is facing the right direction
         self.flip_img()
+        if self.rect.y < 0 or self.rect.y > DISPLAY_HEIGHT:
+            self.kill()
+            self.alive = False
         if self.origin.x > DISPLAY_WIDTH - SCROLL_THRESH or self.origin.x < SCROLL_THRESH:
             dx = self.direction.x * PLAYERSPEED * dt
             self.rect.x += dx
@@ -79,10 +86,15 @@ class Player(pygame.sprite.Sprite):
                     self.direction.y = 0
             self.in_air = not on_floor
 
-    def enemy_collision(self, enemies):
+    def collisions(self, enemies, flags):
         for sprite in enemies:
             if self.rect.colliderect(sprite.rect):
                 self.kill()
+                self.alive = 0
+        for sprite in flags:
+            if self.rect.colliderect(sprite.rect):
+                self.alive = 2
+        return self.alive
 
     def shoot(self, dt, rocket_group, can_collide):
         time = pygame.time.get_ticks()
@@ -95,12 +107,15 @@ class Player(pygame.sprite.Sprite):
             self.dShoot = time
             self.shooting = True
         if self.shooting:
-            if time - self.dShoot < 5000:
+            if time - self.dShoot < 2700:
                 self.rocket.move(self.rocket_direction, dt)
                 self.shooting = self.rocket.collide(can_collide)
-            else:
-                self.shooting = False
+        if time - self.dShoot > 2700:
+            try:
                 self.rocket.kill()
+            except:
+                pass
+            self.shooting = False
 
     def flip_img(self):
         if self.direction.x > 0:
@@ -114,19 +129,18 @@ class Tile(pygame.sprite.Sprite):
         super().__init__()
         #Tile image and rect
         self.name = "tile"
-        self.image = pygame.Surface([TILE_WIDTH, TILE_HEIGHT])
+        self.image = pygame.image.load("Graphics/tile.png").convert_alpha()
         self.rect = self.image.get_rect(topleft=pos)
-        self.image.fill([55, 25, 7])
-
 
 class Rocket(pygame.sprite.Sprite):
     def __init__(self, pos, direction):
         super().__init__()
         if direction > 0:
             self.image = pygame.image.load("Graphics/rocket.png").convert_alpha()
+            self.rect = self.image.get_rect(center=pos)
         else:
             self.image = pygame.transform.flip(pygame.image.load("Graphics/rocket.png").convert_alpha(), True, False)
-        self.rect = self.image.get_rect(topleft=pos)
+            self.rect = self.image.get_rect(center=pos)
     
     def move(self, direction, dt):
         self.rect.x += 500 * direction * dt
@@ -135,12 +149,15 @@ class Rocket(pygame.sprite.Sprite):
         alive = True
         for sprite in can_collide:
             if sprite.rect.colliderect(self.rect):
-                self.kill()
+                self.explode()
                 alive = False
                 if sprite.name == 'enemy':
                     sprite.kill()
         return alive
     
+    def explode(self):
+        self.image = pygame.image.load("Graphics/explosion.png").convert_alpha()
+        self.rect = self.image.get_rect(center=[self.rect.x, self.rect.y])
 
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, pos):
@@ -165,4 +182,14 @@ class Enemy(pygame.sprite.Sprite):
                     self.rect.right = sprite.rect.left
                     self.xDirection = 1
             
-        
+class Flag(pygame.sprite.Sprite):
+    def __init__(self, pos):
+        super().__init__()
+        self.image = pygame.image.load("Graphics/flag.png").convert_alpha()
+        self.rect = self.image.get_rect(center=pos)
+
+class Button(pygame.sprite.Sprite):
+    def __init__(self, pos, type):
+        super().__init__()
+        self.image = pygame.image.load("Graphics/", type).convert_alpha()
+        self.rect = self.image.get_rect(center=pos)
