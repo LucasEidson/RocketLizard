@@ -1,7 +1,7 @@
 import pygame
 from settings import *
 from Sprites import Player, Tile, Enemy
-from level import level1
+from level import Level
 
 class Game:
     def __init__(self):
@@ -26,7 +26,8 @@ class Game:
         self.tiles = pygame.sprite.Group()
         self.enemies = pygame.sprite.Group()
         #level map:
-        map = level1
+        self.level = Level()
+        map = self.level.screenMap
         #auto-draw enemies and tiles
         for j in range(len(map)):
             for i in range(len(map[j])):
@@ -40,6 +41,26 @@ class Game:
                     self.can_collide.add(enemy)
         #Create Rocket_Group (only one rocket at a time)
         self.rocket_group = pygame.sprite.GroupSingle()
+
+    def refresh_map(self):
+        screenMove = False
+        for sprite in self.tiles:
+            if sprite.rect.right < 0:
+                sprite.kill()
+                screenMove = True
+        
+        #move screenMap one to the left
+        if screenMove:
+            #gen_column() sets 17th column to something new
+            self.level.gen_column()
+            for j in range(len(self.level.screenMap)):
+                print("\n")
+                for i in range(len(self.level.screenMap[j]) - 1):
+                    print(self.level.screenMap[j][i], end=" ")
+                    self.level.screenMap[j][i] = self.level.screenMap[j][i + 1]
+
+            #move sprites to correct location:
+            #this is gonna be tough
 
     def scroll(self, screen_scroll):
         for sprite in self.tiles:
@@ -55,6 +76,7 @@ class Game:
         self.player.shoot(dt, self.rocket_group, self.can_collide)
         for sprite in self.enemies.sprites():
             sprite.strafe(dt, self.can_collide)
+        self.refresh_map()
 
         #draw
         self.display_surface.fill([201, 251, 201])

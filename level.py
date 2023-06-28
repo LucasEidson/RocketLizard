@@ -1,19 +1,30 @@
+import random
 #0 = nothing, 1 = tile, 2 = enemy
-level1 = [
-    [0] * 100,
-    [0] * 100,
-    [0] * 100,
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1,],
-    [1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 2, 0, 1, 2, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 1, 0],
-    [1]* 100,
-]
+
 class Level():
     def __init__(self):
-        pass
-    #eventually I will need to generate a semi-random map for the level!
+        #the screen is 12 tiles high, 16 tiles wide
+        self.screenMap = [
+            [0] * 17,
+            [0] * 17,
+            [0] * 17,
+            [0] * 17,
+            [0] * 17,
+            [0] * 17,
+            [0] * 17,
+            [0] * 17,
+            [0] * 17,
+            [0] * 17,
+            [0] * 17,
+            [1] * 17
+        ]
+        self.HEIGHT = 12
+        self.WIDTH = 16
+    def gen_column(self):
+        for i in range(len(self.screenMap)):
+            if self.screenMap[i][15]:
+                print("i = ", i)
+                x = random.randint(i - 2, self.HEIGHT - 1)
+                print("x = ", x)
+                self.screenMap[x][16] = 1
+                         
