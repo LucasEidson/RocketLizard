@@ -5,7 +5,7 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, pos):
         super().__init__()
         #Player image and rect
-        self.image = pygame.image.load("Graphics/Lizardstill1.png").convert_alpha()
+        self.image = pygame.image.load("Graphics/player.png").convert_alpha()
         self.rect = self.image.get_rect(topleft=pos)
         self.direction = pygame.math.Vector2(0, 0)
         self.alive = 1
@@ -119,9 +119,9 @@ class Player(pygame.sprite.Sprite):
 
     def flip_img(self):
         if self.direction.x > 0:
-            self.image = pygame.transform.flip(pygame.image.load("Graphics/Lizardstill1.png").convert_alpha(), True, False)
+            self.image = pygame.transform.flip(pygame.image.load("Graphics/player.png").convert_alpha(), True, False)
         else:
-            self.image = pygame.image.load("Graphics/Lizardstill1.png").convert_alpha()
+            self.image = pygame.image.load("Graphics/player.png").convert_alpha()
 
 
 class Tile(pygame.sprite.Sprite):
@@ -163,7 +163,7 @@ class Enemy(pygame.sprite.Sprite):
     def __init__(self, pos):
         super().__init__()
         #enemy image and rect
-        self.image = pygame.image.load("Graphics/robot.png")
+        self.image = pygame.image.load("Graphics/enemy.png")
         self.rect = self.image.get_rect(topleft=pos)
         self.name = "enemy"
         self.xDirection = 1
@@ -188,8 +188,11 @@ class Flag(pygame.sprite.Sprite):
         self.image = pygame.image.load("Graphics/flag.png").convert_alpha()
         self.rect = self.image.get_rect(center=pos)
 
-class Button(pygame.sprite.Sprite):
+class Image(pygame.sprite.Sprite):
     def __init__(self, pos, type):
         super().__init__()
-        self.image = pygame.image.load("Graphics/", type).convert_alpha()
-        self.rect = self.image.get_rect(center=pos)
+        self.image = pygame.image.load("Graphics/" + type + ".png").convert_alpha()
+        if type == 'flag':
+            self.rect = self.image.get_rect(topleft=(pos[0], pos[1] - FLAG_HEIGHT + TILE_HEIGHT))
+        else:
+            self.rect = self.image.get_rect(topleft=pos)

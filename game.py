@@ -10,7 +10,6 @@ class Game:
         self.restart = self.font.render('Left Click to Play Level, Right Click to Enter Level Editor', False, (255, 20, 20))
         self.restart_rect = self.restart.get_rect(center=pygame.math.Vector2(DISPLAY_WIDTH / 2, DISPLAY_HEIGHT * 2/3))
         self.spawn_sprites()
-        print(self.player)
 
     #input
     def event_loop(self):

@@ -1,6 +1,6 @@
 import random
 import pygame
-from Sprites import Player, Tile, Enemy, Flag, Button
+from Sprites import Image
 from settings import *
 #-1 = player, 0 = nothing, 1 = tile, 2 = enemy, 3 - flag
 
@@ -9,69 +9,96 @@ class Level():
         #the screen is 12 tiles high, 16 tiles wide
         self.display_surface = pygame.display.get_surface()
         #create groups:
-        self.tiles = pygame.sprite.Group()
-        self.flags = pygame.sprite.Group()
-        self.enemies = pygame.sprite.Group()
-        self.player_group = pygame.sprite.GroupSingle()
-        self.buttons = pygame.sprite.Group()
+        self.images = pygame.sprite.Group()
+        #create important variables
+        self.tile_types = ['none', 'tile', 'enemy', 'flag', 'player']
+        self.selected = 0
+        self.inEditor = True
 
-        tile = Tile(pygame.math.Vector2(100,100))
-        self.tiles.add(tile)
-
-        #grids and nav
-        #origin is the left side of the screen
+        #not using 
         self.origin = 0
-        self.scroll = 0
         self.screenMap = [
-            [0] * 19,
-            [0] * 19,
-            [0] * 19,
-            [0] * 19,
-            [0] * 19,
-            [0] * 19,
-            [0] * 19,
-            [0] * 19,
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3] * 19,
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 2, 0, 2, 1],
-            [1] * 19
+            [0] * 200,
+            [0] * 200,
+            [0] * 200,
+            [0] * 200,
+            [0] * 200,
+            [0] * 200,
+            [0] * 200,
+            [0] * 200,
+            [0] * 200,
+            [0] * 200,
+            [0] * 200,
+            [0] * 200
         ]
         self.HEIGHT = 12
         self.WIDTH = 16
     
     def draw_grid(self):
-        cols = DISPLAY_WIDTH // TILE_WIDTH
+        cols = DISPLAY_WIDTH // TILE_WIDTH + 1
         rows = DISPLAY_HEIGHT // TILE_HEIGHT
-        for col in range(cols * 200):
-            x = self.origin + col * TILE_WIDTH
+        offset = self.origin - int(self.origin / TILE_WIDTH) * TILE_WIDTH
+        for col in range(cols):
+            x = offset + col * TILE_WIDTH
             pygame.draw.line(self.display_surface, 'black', (x, 0), (x, DISPLAY_HEIGHT))
-        #for row in range()
+        for row in range(rows):
+            y = row * TILE_HEIGHT
+            pygame.draw.line(self.display_surface, 'black', (0, y), (DISPLAY_WIDTH, y))
 
-    def scroll_screen(self, dt):
+    def get_input(self):
+        dx = 0
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_a]:
-            self.origin += 400 * dt
-        elif keys[pygame.K_d]:
-            self.origin -= 400 * dt
-        #scroll through sprites, lines are in draw_grid
-        for sprite in self.tiles:
-            sprite.rect.x += self.origin
-        for sprite in self.flags:
-            sprite.rect.x += self.origin
-        for sprite in self.enemies:
-            sprite.rect.x += self.origin
-        for sprite in self.player_group:
-            sprite.rect.x += self.origin
+        #select tile
+        if keys[pygame.K_0]:
+            self.selected = 0
+        elif keys[pygame.K_1]:
+            self.selected = 1
+        elif keys[pygame.K_2]:
+            self.selected = 2
+        elif keys[pygame.K_3]:
+            self.selected = 3
+        elif keys[pygame.K_4]:
+            self.selected = 4
+        #move screen
+        if keys[pygame.K_a] and self.origin < 0: #move everything right
+            dx = 10
+        if keys[pygame.K_d] and self.origin > (-200 * TILE_WIDTH) + DISPLAY_WIDTH: #move everything left
+            dx = -10
+        self.origin += dx
+        self.scroll_sprites(dx)
+
+        #leave editor
+        if keys[pygame.K_ESCAPE]:
+            self.inEditor = False
+
+
+    def place_tiles(self):
+        if pygame.mouse.get_pressed()[0]:
+            x = int((pygame.mouse.get_pos()[0] - self.origin) // TILE_WIDTH)
+            y = int(pygame.mouse.get_pos()[1] // TILE_HEIGHT)
+            if 0 <= x < 200 and 0 <= y < (DISPLAY_HEIGHT // TILE_HEIGHT) and self.screenMap[y][x] == 0:
+                self.screenMap[y][x] = self.selected
+                if self.tile_types[self.selected] != 'none':
+                    sprite = Image([x * TILE_WIDTH + self.origin, y * TILE_HEIGHT], self.tile_types[self.selected])
+                    self.images.add(sprite)
+        elif pygame.mouse.get_pressed()[2]:
+            x = int((pygame.mouse.get_pos()[0] - self.origin) // TILE_WIDTH)
+            y = int(pygame.mouse.get_pos()[1] // TILE_HEIGHT)
+            if 0 <= x < 200 and 0 <= y < (DISPLAY_HEIGHT // TILE_HEIGHT):
+                self.screenMap[y][x] = 0
         
-        
+    def scroll_sprites(self, dx):
+        for sprite in self.images:
+            sprite.rect.x += dx
+
     def run(self, dt):
         self.display_surface.fill([201, 251, 201])
+        self.get_input()
         self.draw_grid()
-        self.scroll_screen(dt)
-        self.buttons.draw(self.display_surface)
-        self.tiles.draw(self.display_surface)
-        self.flags.draw(self.display_surface)
-        self.enemies.draw(self.display_surface)
-        self.player_group.draw(self.display_surface)
+        self.place_tiles()
+
+        #draw groups
+        self.images.draw(self.display_surface)
         pygame.display.update()
+        return(self.inEditor)
 

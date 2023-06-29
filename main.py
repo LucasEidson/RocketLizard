@@ -8,7 +8,7 @@ class Main:
         pygame.init()
         pygame.display.set_mode([DISPLAY_WIDTH, DISPLAY_HEIGHT])
         pygame.display.set_caption("Rocket Lizard")
-        icon = pygame.image.load("Graphics/Lizardstill1.png")
+        icon = pygame.image.load("Graphics/player.png")
         pygame.display.set_icon(icon)
         self.clock = pygame.time.Clock()
         self.game = Game()
@@ -20,7 +20,8 @@ class Main:
             dt = self.clock.tick(60) / 1000
             #from game.py
             if enter_editor:
-                self.level.run(dt)
+                self.level.inEditor = True
+                enter_editor = self.level.run(dt)
             else:
                 enter_editor = self.game.run(dt)
             self.game.event_loop() 
