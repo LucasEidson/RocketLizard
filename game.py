@@ -9,7 +9,12 @@ class Game:
         self.font = pygame.font.Font("Graphics/square-deal.ttf", 32)
         self.restart = self.font.render('Left Click to Play Level, Right Click to Enter Level Editor', False, (255, 20, 20))
         self.restart_rect = self.restart.get_rect(center=pygame.math.Vector2(DISPLAY_WIDTH / 2, DISPLAY_HEIGHT * 2/3))
+        #spawn sprites
         self.spawn_sprites()
+        #move player to middle of screen
+        init_scroll = DISPLAY_WIDTH / 2 - self.player.rect.x
+        self.scroll(init_scroll)
+        self.player.rect.x += init_scroll
 
     #input
     def event_loop(self):
@@ -20,35 +25,48 @@ class Game:
     
     def spawn_sprites(self):
         #player
+        has_player = False
         self.player_group = pygame.sprite.GroupSingle()
-        self.player = Player([DISPLAY_WIDTH / 2, DISPLAY_HEIGHT - TILE_HEIGHT * 2])
-        self.player.add(self.player_group)
+        #self.player = Player([DISPLAY_WIDTH / 2, DISPLAY_HEIGHT - TILE_HEIGHT * 2])
+        #self.player.add(self.player_group)
+
         #tiles and enemies
         self.can_collide = pygame.sprite.Group()
         self.tiles = pygame.sprite.Group()
         self.enemies = pygame.sprite.Group()
         self.flags = pygame.sprite.Group()
         #level map:
-        self.level = Level()
-        map = self.level.screenMap
+        map = [[0] * 200] * 12
+        with open("Levels/level1.txt", "r") as levelFile:
+            on_line = 0
+            for line in levelFile:
+                map[on_line] = line.split(", ")
+                on_line += 1
         #auto-draw enemies and tiles
-        for j in range(len(map)):
-            for i in range(len(map[j])):
-                if map[j][i] == 1:
-                    tile = Tile([i * TILE_WIDTH, j * TILE_HEIGHT])
+        for i in range(len(map)):
+            for j in range(len(map[i])):
+                if map[i][j] == '1':
+                    tile = Tile([j * TILE_WIDTH, i * TILE_HEIGHT])
                     self.tiles.add(tile)
                     self.can_collide.add(tile)
-                elif map[j][i] == 2:
-                    enemy = Enemy([i * TILE_WIDTH - (ENEMY_WIDTH - TILE_WIDTH), j * TILE_HEIGHT - (ENEMY_HEIGHT - TILE_HEIGHT)])
+                elif map[i][j] == '2':
+                    enemy = Enemy([j * TILE_WIDTH - (ENEMY_WIDTH - TILE_WIDTH), i * TILE_HEIGHT - (ENEMY_HEIGHT - TILE_HEIGHT)])
                     self.enemies.add(enemy)
                     self.can_collide.add(enemy)
-                elif map[j][i] == 3:
-                    flag = Flag([i * TILE_WIDTH + (TILE_WIDTH / 2), j * TILE_HEIGHT])
+                elif map[i][j] == '3':
+                    flag = Flag([j * TILE_WIDTH + (TILE_WIDTH / 2), i * TILE_HEIGHT])
                     self.flags.add(flag)
-                #elif map[j][i] == -1:
-                    #self.player = Player([i * TILE_WIDTH + (TILE_WIDTH / 2), (j * TILE_HEIGHT - PLAYER_HEIGHT)])
+                elif map[i][j] == '4':
+                    self.player = Player([j * TILE_WIDTH + (TILE_WIDTH / 2), (i * TILE_HEIGHT - PLAYER_HEIGHT)])
+                    self.player.add(self.player_group)
+                    has_player = True
         #Create Rocket_Group (only one rocket at a time)
         self.rocket_group = pygame.sprite.GroupSingle() 
+        #ensure that a player is spawned:
+        if has_player == False:
+            print("you forgot to add a player in the level editor!")
+            self.player = Player([DISPLAY_WIDTH / 2, DISPLAY_HEIGHT - TILE_HEIGHT * 2])
+            self.player.add(self.player_group)
 
     def scroll(self, screen_scroll):
         for sprite in self.tiles:

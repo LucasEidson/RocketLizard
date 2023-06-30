@@ -52,7 +52,7 @@ class Player(pygame.sprite.Sprite):
         self.origin = pygame.math.Vector2(self.rect.x, self.rect.y)
         #make sure player is facing the right direction
         self.flip_img()
-        if self.rect.y < 0 or self.rect.y > DISPLAY_HEIGHT:
+        if self.rect.y < -600 or self.rect.y > DISPLAY_HEIGHT:
             self.kill()
             self.alive = False
         if self.origin.x > DISPLAY_WIDTH - SCROLL_THRESH or self.origin.x < SCROLL_THRESH:

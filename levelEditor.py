@@ -2,7 +2,7 @@ import random
 import pygame
 from Sprites import Image
 from settings import *
-#-1 = player, 0 = nothing, 1 = tile, 2 = enemy, 3 - flag
+#0 = nothing, 1 = tile, 2 = enemy, 3 = flag, 4 = player
 
 class Level():
     def __init__(self):
@@ -14,23 +14,20 @@ class Level():
         self.tile_types = ['none', 'tile', 'enemy', 'flag', 'player']
         self.selected = 0
         self.inEditor = True
-
-        #not using 
         self.origin = 0
-        self.screenMap = [
-            [0] * 200,
-            [0] * 200,
-            [0] * 200,
-            [0] * 200,
-            [0] * 200,
-            [0] * 200,
-            [0] * 200,
-            [0] * 200,
-            [0] * 200,
-            [0] * 200,
-            [0] * 200,
-            [0] * 200
-        ]
+        self.screenMap = [[0] * 200, 
+                          [0] * 200,
+                          [0] * 200,
+                          [0] * 200,
+                          [0] * 200,
+                          [0] * 200,
+                          [0] * 200,
+                          [0] * 200,
+                          [0] * 200,
+                          [0] * 200,
+                          [0] * 200,
+                          [0] * 200
+                          ]
         self.HEIGHT = 12
         self.WIDTH = 16
     
@@ -86,10 +83,22 @@ class Level():
             y = int(pygame.mouse.get_pos()[1] // TILE_HEIGHT)
             if 0 <= x < 200 and 0 <= y < (DISPLAY_HEIGHT // TILE_HEIGHT):
                 self.screenMap[y][x] = 0
+                for sprite in self.images:
+                    if (sprite.rect.x - self.origin) // TILE_WIDTH == x and sprite.rect.y // TILE_HEIGHT == y:
+                        sprite.kill()
         
     def scroll_sprites(self, dx):
         for sprite in self.images:
             sprite.rect.x += dx
+
+    def write_file(self):
+        levelFile = open("Levels/level1.txt", "w")
+        for i in range(len(self.screenMap)):
+            if i > 0:
+                levelFile.write('\n')
+            for j in range(len(self.screenMap[i])):
+                levelFile.write(str(self.screenMap[i][j]) + ", ")
+        levelFile.close()
 
     def run(self, dt):
         self.display_surface.fill([201, 251, 201])
@@ -100,5 +109,7 @@ class Level():
         #draw groups
         self.images.draw(self.display_surface)
         pygame.display.update()
+        if self.inEditor == False:
+            self.write_file()
         return(self.inEditor)
 
